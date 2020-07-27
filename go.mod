@@ -1,4 +1,4 @@
-module gogs.geeked.cn/web/plover
+module github.com/chaodoing/plover
 
 go 1.14
 
