@@ -14,6 +14,29 @@ type Controller struct {
 	Request  Request
 }
 
+// @title 分页调用函数
+// @param invoke func(page, limit, offset int) (data interface{}, total int, err error)
+// @rerurn void
+func (this *Controller) Page(invoke func(page, limit, offset int) (data interface{}, total int, err error)) {
+	page := this.Request.Query().GetInt("page", 1)
+	limit := this.Request.Query().GetInt("limit", 15)
+	var (
+		offset int
+	)
+	if page > 0 {
+		offset = (page - 1) * limit
+	} else {
+		offset = 0
+		page = 1
+	}
+	data, total, err := invoke(page, limit, offset)
+	if err != nil {
+		this.Fail(err.Error())
+	} else {
+		this.App.Response.Page(data, page, limit, total)
+	}
+}
+
 // @title 初始化函数
 func (this *Controller) Init(app *App) {
 	this.App = app
@@ -56,7 +79,7 @@ func (this *Controller) Db() *gorm.DB {
 // @description 输出分页数据 ()
 // return (page, limit, total, offset int) 当前页面, 每页条数, 初始化总计条数(0), 查询偏移条数
 func (this *Controller) Pagex() (page, limit, total, offset int) {
-	page  = this.Request.Query().GetInt("page", 1)
+	page = this.Request.Query().GetInt("page", 1)
 	limit = this.Request.Query().GetInt("limit", 15)
 	total = 0
 	if page > 0 {
