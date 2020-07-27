@@ -3,12 +3,13 @@ package plover
 import (
 	_ "github.com/go-sql-driver/mysql"
 	`github.com/jinzhu/gorm`
+	
 	`log`
 )
 
 type Controller struct {
+	db       *gorm.DB
 	App      *App
-	DB       *gorm.DB
 	Response Response
 	Request  Request
 }
@@ -16,25 +17,27 @@ type Controller struct {
 // @title 初始化函数
 func (this *Controller) Init(app *App) {
 	this.App = app
-	this.DB = this.Db(app.Config)
+	this.db = this.Db()
 	this.Response = app.Response
 	this.Request = app.Request
 }
 
 // @title 析构释放变量
 func (this *Controller) Destruct() {
-	if this.DB != nil {
-		defer this.DB.Close()
+	if this.db != nil {
+		this.db.Close()
+		this.db = nil
 	}
 	this.App = nil
 }
 
 // @title 获取 *gorm.DB
 // @description 获取数据库操作对象
-// @param config *bird.Config 配置类
+// @param config *Config 配置类
 // @return *gorm.DB
-func (this *Controller) Db(config *Config) *gorm.DB {
-	if this.DB == nil {
+func (this *Controller) Db() *gorm.DB {
+	var config *Config = this.App.Config
+	if this.db == nil {
 		var (
 			dialect string = config.GetString("database.dialect")
 			schema  string = config.GetString("database.schema")
@@ -44,9 +47,9 @@ func (this *Controller) Db(config *Config) *gorm.DB {
 			log.Fatal(err)
 		}
 		db.LogMode(config.GetBool("database.log"))
-		this.DB = db
+		this.db = db
 	}
-	return this.DB
+	return this.db
 }
 
 // @title 获取当前分页参数
