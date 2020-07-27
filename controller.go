@@ -24,7 +24,7 @@ func (this *Controller) Init(app *App) {
 // @title 析构释放变量
 func (this *Controller) Destruct() {
 	if this.DB != nil {
-		this.DB.Close()
+		defer this.DB.Close()
 	}
 	this.App = nil
 }
