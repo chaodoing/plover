@@ -1,4 +1,4 @@
-module https://gogs.geeked.cn/web/plover
+module gogs.geeked.cn/web/plover
 
 go 1.14
 
