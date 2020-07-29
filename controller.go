@@ -3,7 +3,6 @@ package plover
 import (
 	_ "github.com/go-sql-driver/mysql"
 	`github.com/jinzhu/gorm`
-	
 	`log`
 )
 
@@ -18,11 +17,9 @@ type Controller struct {
 // @param invoke func(page, limit, offset int) (data interface{}, total int, err error)
 // @rerurn void
 func (this *Controller) Page(invoke func(page, limit, offset int) (data interface{}, total int, err error)) {
-	page := this.Request.Query().GetInt("page", 1)
-	limit := this.Request.Query().GetInt("limit", 15)
-	var (
-		offset int
-	)
+	page := int(this.Request.Get().GetInt64("page", 1))
+	limit := int(this.Request.Get().GetInt64("limit", 15))
+	var offset int
 	if page > 0 {
 		offset = (page - 1) * limit
 	} else {
@@ -73,48 +70,6 @@ func (this *Controller) Db() *gorm.DB {
 		this.db = db
 	}
 	return this.db
-}
-
-// @title 获取当前分页参数
-// @description 输出分页数据 ()
-// return (page, limit, total, offset int) 当前页面, 每页条数, 初始化总计条数(0), 查询偏移条数
-func (this *Controller) Pagex() (page, limit, total, offset int) {
-	page = this.Request.Query().GetInt("page", 1)
-	limit = this.Request.Query().GetInt("limit", 15)
-	total = 0
-	if page > 0 {
-		offset = (page - 1) * limit
-	} else {
-		offset = 0
-		page = 1
-	}
-	return
-}
-
-// @title 修改数据
-// @description 修改数据 (db, data)
-// @param db gorm.DB 要查询的表名称
-// @param data interface 模型
-func (this *Controller) Change(db *gorm.DB, data interface{}) {
-	updated := db.Updates(data).RowsAffected > 0
-	if updated {
-		this.Message("修改数据成功")
-	} else {
-		this.Message("修改数据失败", 1)
-	}
-}
-
-// @title 添加数据
-// @description 添加数据 (db, data)
-// @param db gorm.DB 要查询的表名称
-// @param data interface 模型
-func (this *Controller) Add(db *gorm.DB, data interface{}) {
-	created := db.Create(&data).RowsAffected > 0
-	if created {
-		this.Message("添加数据成功")
-	} else {
-		this.Message("添加数据失败", 1)
-	}
 }
 
 // @title 输出成功消息
