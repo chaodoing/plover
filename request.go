@@ -6,6 +6,7 @@ import (
 	`errors`
 	`io/ioutil`
 	"net/http"
+	`net/url`
 	"strings"
 )
 
@@ -132,7 +133,12 @@ func (r *Request) Put() (data Query, err error) {
 
 func (r *Request) Delete() (data Query, err error) {
 	if r.Method == http.MethodDelete {
-		return r.analysisForms()
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			return Query{nil}, err
+		}
+		value, err := url.ParseQuery(string(body))
+		return Query{value}, err
 	} else {
 		return Query{nil}, errors.New("非法操作")
 	}
